@@ -1,0 +1,55 @@
+/*
+ * sphinxdoc.css_t
+ * ~~~~~~~~~~~~~~~
+ *
+ * Sphinx stylesheet -- sphinxdoc theme.  Originally created by
+ * Armin Ronacher for Werkzeug.
+ *
+ * :copyright: Copyright 2007-2015 by the Sphinx team, see AUTHORS.
+ * :license: BSD, see LICENSE for details.
+ *
+ */
+
+@import url("sphinxdoc.css");
+
+/* -- page layout ----------------------------------------------------------- */
+
+/* background color (outside the text zone) */
+body {
+    background-color: #2B547E  ;
+}
+
+/* color of external links */
+a {
+    color: #2B547E;
+    text-decoration: none; 
+}
+
+
+/* decoration when over external links */
+a:hover {
+    text-decoration: underline; 
+}
+
+/* color of the links in the "related" bar */
+div.related ul li a {
+    color: #2B547E; 
+}
+
+/*color of the sphinx sidebar (table of contents) */
+div.sphinxsidebar h3, div.sphinxsidebar h4 {
+    background-color:#2B547E;
+    color:white;
+}
+
+/*color of the sphinx searchbox (table of contents) */
+div.searchbox h3 {
+    background-color:#2B547E;
+    color:white;
+}
+
+/* color of the links to modules */
+span.pre{
+    color:#2B547E;
+}
+
