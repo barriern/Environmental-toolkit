@@ -452,6 +452,7 @@ def subspan_default_cmap(cmapname, nbcol):
 
     from matplotlib._cm import datad
     from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+    import matplotlib.cm as cm
 
     if not(isinstance(nbcol, int)):
         raise IOError("The nbcol must be an integer")
@@ -466,9 +467,18 @@ def subspan_default_cmap(cmapname, nbcol):
 
     # Matplotlib function that creates the colormap from
     # the mapping directory
-    if(isinstance(dictout, dict)): 
-        cmap = LinearSegmentedColormap('', dictout, N=nbcol)
-    else:
-        cmap = ListedColormap(dictout)._resample(nbcol)
+    #if(isinstance(dictout, dict)): 
+    #cmap = LinearSegmentedColormap('', dictout, N=nbcol)
+    #else:
+    #base = cm.get_cmap(cmapname)
+    #outlist = np.linspace(0, 1, nbcol + 1)
+    #newcolors = base(outlist)
+    #print(newcolors)
+    #cmap = ListedColormap(newcolors, N=nbcol)
+    #return cmap
         
+    base = cm.get_cmap(cmapname)
+    outlist = np.linspace(0, 1, nbcol)
+    newcolors = base(outlist)
+    cmap = ListedColormap(newcolors, N=nbcol)
     return cmap
