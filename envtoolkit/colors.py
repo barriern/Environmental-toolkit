@@ -155,8 +155,8 @@ class FancyCmap(object):
         """
 
         if self.smooth:
-            print "Warning: This function cannot be used with smoothed colormap."
-            print "Nothing has been changed"
+            print ("Warning: This function cannot be used with smoothed colormap.")
+            print ("Nothing has been changed")
             return
 
         cmin, cmax = cbar.get_clim()
@@ -451,7 +451,7 @@ def subspan_default_cmap(cmapname, nbcol):
     """
 
     from matplotlib._cm import datad
-    from matplotlib.colors import LinearSegmentedColormap
+    from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
     if not(isinstance(nbcol, int)):
         raise IOError("The nbcol must be an integer")
@@ -466,6 +466,9 @@ def subspan_default_cmap(cmapname, nbcol):
 
     # Matplotlib function that creates the colormap from
     # the mapping directory
-    cmap = LinearSegmentedColormap('', dictout, N=nbcol)
-
+    if(isinstance(dictout, dict)): 
+        cmap = LinearSegmentedColormap('', dictout, N=nbcol)
+    else:
+        cmap = ListedColormap(dictout)._resample(nbcol)
+        
     return cmap
