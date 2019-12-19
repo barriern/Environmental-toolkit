@@ -477,6 +477,7 @@ def subspan_default_cmap(cmapname, nbcol):
     #cmap = ListedColormap(newcolors, N=nbcol)
     #return cmap
         
+    # https://gist.github.com/jakevdp/91077b0cae40f8f8244a
     base = cm.get_cmap(cmapname)
     outlist = np.linspace(0, 1, nbcol)
     newcolors = base(outlist)
