@@ -1,5 +1,5 @@
 ![License](https://img.shields.io/github/license/barriern/Environmental-toolkit)
-[![DOI](https://zenodo.org/badge/154350333.svg)](https://zenodo.org/record/4091652)
+[![DOI](https://zenodo.org/badge/154453680.svg)](https://zenodo.org/badge/latestdoi/154453680)
 [![PyPI](https://img.shields.io/pypi/v/envtoolkit)](https://pypi.org/project/envtoolkit/)
 [![Latest Release](https://img.shields.io/github/release/barriern/Environmental-toolkit)](https://github.com/barriern/Environmental-toolkit/issues)
 [![GitHub Issues](https://img.shields.io/github/issues/barriern/Environmental-toolkit)](https://github.com/barriern/Environmental-toolkit/releases)
