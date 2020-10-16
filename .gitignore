@@ -1,3 +1,8 @@
 *.pyc
 docs/build
 send_to_ftp.sh
+**/.*.swp
+build
+dist
+envtoolkit.egg-info
+
