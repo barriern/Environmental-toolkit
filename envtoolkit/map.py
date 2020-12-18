@@ -76,7 +76,7 @@ def lonflip(lonname, data):
         lon =  (lon + 180) % 360 - 180
     
     data[lonname] = lon
-    dataout = data.sort(data[lonname])
+    dataout = data.sortby(data[lonname])
 
     return(dataout)
 
