@@ -39,7 +39,7 @@ def make_bmap(lon, lat, **kwargs):
     return bmap
 
 
-def lonflip(lon, data):
+def lonflip(lonname, data):
 
     """
     Reorders a longitude and a data array about the central longitude 
@@ -47,6 +47,8 @@ def lonflip(lon, data):
     Adapted from the NCL `lonFlip
     <https://www.ncl.ucar.edu/Document/Functions/Contributed/lonFlip.shtml>`_
     function.
+
+    Improved from https://stackoverflow.com/questions/53345442/about-changing-longitude-array-from-0-360-to-180-to-180-with-python-xarray
 
     :param numpy.array lon: 1D longitude array. 
      The number of longitudes must be even
@@ -63,49 +65,20 @@ def lonflip(lon, data):
 
     """
 
-    mlon = len(lon)
-
-    if lon.ndim != 1:
-        raise ValueError("The longitude argument must be 1D")
-
-    if mlon % 2 != 0:
-        raise ValueError("The lonflip function requires that the number \n \
-        of longitudes be even. mlon= %i \n =======================" % mlon)
-
-    mlon2 = mlon/2
-
-    if data.ndim == 1:
-        temp = np.ma.empty(data.shape)
-        temp[0:mlon2] = data[mlon2:]
-        temp[mlon2:] = data[0:mlon2]
-    elif data.ndim == 2:
-        temp = np.ma.empty(data.shape)
-        temp[:, 0:mlon2] = data[:, mlon2:]
-        temp[:, mlon2:] = data[:, 0:mlon2]
-    elif data.ndim == 3:
-        temp = np.ma.empty(data.shape)
-        temp[:, :, 0:mlon2] = data[:, :, mlon2:]
-        temp[:, :, mlon2:] = data[:, :, 0:mlon2]
-    elif data.ndim == 4:
-        temp = np.ma.empty(data.shape)
-        temp[:, :, :, 0:mlon2] = data[:, :, :, mlon2:]
-        temp[:, :, :, mlon2:] = data[:, :, :, 0:mlon2]
+    lon = data[lonname]
+    if(lon.min() < 0):
+        print('Conversion from -180/180 to 0/360')
+        lon = (lon + 360) % 360
     else:
-        raise ValueError("Dimension %i cannot exceed 4" % data.ndim)
+        print('Conversion from 0/360 to -180/180')
+        lon =  (lon + 180) % 360 - 180
+    
+    data[lonname] = data[lonname]
+    dataout = data.sort(data[lonname])
 
-    tlon = np.empty(lon.shape)
+    return(dataout)
 
-    tlon[0:mlon2] = lon[mlon2:]
-    tlon[mlon2:] = lon[0:mlon2]
 
-    if lon[0] >= 0:  # (say) 0=>355
-        tlon[0:mlon2] = lon[mlon2:] - 360
-        tlon[mlon2:] = lon[0:mlon2]
-    else:                   # (say) -180=>175
-        tlon[0:mlon2] = lon[mlon2:]
-        tlon[mlon2:] = lon[0:mlon2] + 360
-
-    return tlon, temp
 
 
 def inpolygon(xin_2d, yin_2d, x_pol, y_pol):
