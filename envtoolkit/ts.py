@@ -743,10 +743,10 @@ def corr_sig(ts1, ts2, df, coeff):
     for lag in range(-maxlag, maxlag+1, 1):
         veclag = vectemps + lag
 
-        I1 = np.nonzero(veclag> = 0)[0]
+        I1 = np.nonzero(veclag >= 0)[0]
         I1 = I1[0]
 
-        I2 = np.nonzero(veclag< = n-1)[0]
+        I2 = np.nonzero(veclag <= n-1)[0]
         I2 = I2[-1]
 
         nptcom = I2 -I1 + 1
