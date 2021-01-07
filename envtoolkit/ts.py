@@ -728,7 +728,7 @@ def autolag1(TS1):
     return test
 
 
-def corr_sig(ts1, ts2, df, coeff):
+def corr_sig(ts1, ts2, df, coeff, use_bretherton=False):
 
     n = len(ts1)
     Nstep = 1
@@ -737,6 +737,8 @@ def corr_sig(ts1, ts2, df, coeff):
     a = autolag1(ts1)
     b = autolag1(ts2)
     bretherton = (1 - a*b) / (1 + a*b)
+    if not use_bretherton:
+        bretherton = 1.0
 
     rsign = np.empty(2 * maxlag  +1)
 
@@ -752,7 +754,7 @@ def corr_sig(ts1, ts2, df, coeff):
         nptcom = I2 -I1 + 1
         dl = (nptcom - df) * bretherton
 
-        rsign[lag/Nstep + maxlag/Nstep] = coeff/(np.sqrt(dl+coeff*coeff))
+        rsign[int(lag/Nstep + maxlag/Nstep)] = coeff/(np.sqrt(dl+coeff*coeff))
 
     veclag = np.arange(-maxlag,maxlag+1, 1)
     return rsign,veclag
