@@ -717,3 +717,42 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
     output = np.reshape(output, outshape)
     
     return lag, output
+
+def autolag1(TS1):
+    x = TS1
+    y = np.empty(x.shape)
+    n = len(TS1)
+    y[0:n-1]  =x[1:n]
+    y[n-1]  =x[0]
+    test = np.corrcoef(x,y)[0,1]
+    return test
+
+
+def corr_sig(ts1, ts2, df, coeff):
+
+    n = len(ts1)
+    Nstep = 1
+    maxlag = n-1
+    vectemps = np.arange(0, n)
+    a = autolag1(ts1)
+    b = autolag1(ts2)
+    bretherton = (1 - a*b) / (1 + a*b)
+
+    rsign = np.empty(2 * maxlag  +1)
+
+    for lag in range(-maxlag, maxlag+1, 1):
+        veclag = vectemps + lag
+
+        I1 = np.nonzero(veclag> = 0)[0]
+        I1 = I1[0]
+
+        I2 = np.nonzero(veclag< = n-1)[0]
+        I2 = I2[-1]
+
+        nptcom = I2 -I1 + 1
+        dl = (nptcom - df) * bretherton
+
+        rsign[lag/Nstep + maxlag/Nstep] = coeff/(np.sqrt(dl+coeff*coeff))
+
+    veclag = np.arange(-maxlag,maxlag+1, 1)
+    return rsign,veclag
