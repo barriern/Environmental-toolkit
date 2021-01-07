@@ -74,7 +74,7 @@ def multitaper(xdata, deltat=1., nbandw=3, nfft=None):
         error = 2*np.sum(weights**2*np.array(np.mat(np.ones((nfft, 1)))*eigval), axis=1)**2
         error = error/np.sum(weights**4*np.array(np.mat(np.ones((nfft, 1)))*np.mat(np.array(eigval)**2)), axis=1)
 
-    select = np.arange(0, (nfft+1)/2+1)
+    select = np.arange(0, (nfft+1)/2+1, dtype=np.int)
 
     spectrum = spectrum[select]
     freq = np.arange(0, 1/deltat, 1/(nfft*deltat))[select]
