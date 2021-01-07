@@ -546,7 +546,9 @@ def xcorr_1d(xdata, ydata, maxlag=None, use_covariance=False, ddof=1):
         maxlag = 1
 
     lags = np.arange(-maxlag, maxlag + 1)
-    output = output[ntime + maxlag -1:ntime -1 - maxlag -1:-1]
+    index = np.arange(ntime + maxlag -1, ntime -1 - maxlag -1, -1)
+
+    output = output[index]
 
     return lags, output
 
@@ -678,7 +680,7 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
         xdata = np.atleast_2d(xdata).T
     if ydata.ndim == 1:
         ydata = np.atleast_2d(ydata).T
-    
+
     # extracting the spatial dimensions associated with
     # the imput arrays
     ndimx = np.prod(xdata.shape[1:])
@@ -714,6 +716,7 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
 
     # conversion into a numpy array and reshaping
     output = np.array(output)
+    
     output = np.reshape(output, outshape)
     
     return lag, output
@@ -737,12 +740,15 @@ def corr_sig(ts1, ts2, df, coeff, use_bretherton=False):
     a = autolag1(ts1)
     b = autolag1(ts2)
     bretherton = (1 - a*b) / (1 + a*b)
+
     if not use_bretherton:
         bretherton = 1.0
 
     rsign = np.empty(2 * maxlag  +1)
 
+    cpt = 0
     for lag in range(-maxlag, maxlag+1, 1):
+
         veclag = vectemps + lag
 
         I1 = np.nonzero(veclag >= 0)[0]
@@ -751,10 +757,12 @@ def corr_sig(ts1, ts2, df, coeff, use_bretherton=False):
         I2 = np.nonzero(veclag <= n-1)[0]
         I2 = I2[-1]
 
-        nptcom = I2 -I1 + 1
+        nptcom = I2 - I1 + 1
+
         dl = (nptcom - df) * bretherton
 
-        rsign[int(lag/Nstep + maxlag/Nstep)] = coeff/(np.sqrt(dl+coeff*coeff))
+        rsign[cpt] = coeff/(np.sqrt(dl+coeff*coeff))
+        cpt += 1
 
     veclag = np.arange(-maxlag,maxlag+1, 1)
     return rsign,veclag
