@@ -112,7 +112,7 @@ class Lanczos(object):
             wgt = np.transpose(wgt)
 
         while indw+nwgt2+1 <= data.shape[0]:
-            index = np.arange(indw-nwgt2, indw+nwgt2+1)
+            index = np.arange(indw-nwgt2, indw+nwgt2+1, dtype=np.int)
             output[indw] = np.sum(wgt*data[index], axis=0)
             indw = indw+1
 
