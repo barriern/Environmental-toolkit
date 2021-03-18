@@ -103,7 +103,7 @@ def plot_spectra(xdata, deltat, ferror, spec_type='variance',
      energy spectrum (freq*spectrim, in $unit^2$).
     :param int nbandw: time bandwidth product (multitaper used 2*nbandw-1 tapers)
     :param str ylabel: label of the yaxis
-    :param **kwargs: plot additional arguments
+    :param ``**kwargs``: plot additional arguments
     :return: A tuple (Px,F,Pxc) with:
 
         - Px: the spectrum vector
@@ -151,7 +151,7 @@ def plot_slope(spectrum, freq, fmin=None, fmax=None,
     :param float fmin: the first frequency on which to compute the slope
     :param float fmax: the last frequency on which to compute the slope
     :param float offy: the y-offset of the slope
-    :param dict **kwargs: additional plotting arguments
+    :param dict ``**kwargs``: additional plotting arguments
     :return: the value of the slope
     :rtype: float
     """
@@ -192,7 +192,7 @@ def plot_ref_slope(fmin, fmax, yinterc, slope=2,
     :param float fmax: frequency where to end the reference the slope
     :param float yinterc: y intercept of the slopes
     :param float kval: the slope that we
-    :param dict **kwargs: additional line plotting arguments
+    :param dict ``**kwargs``: additional line plotting arguments
     """
 
     xdata = np.linspace(fmin, fmax, 5)
