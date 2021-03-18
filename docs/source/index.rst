@@ -13,7 +13,6 @@ Contents:
 
    intro
    install
-   map
    colors
    timeseries 
    spectral 

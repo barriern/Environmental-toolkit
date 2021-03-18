@@ -14,7 +14,6 @@ The *envtoolkit* library requieres the following packages:
     - :py:mod:`matplotlib.pyplot` (for plots)
     - :py:mod:`matplotlib.colors` (for colors)
     - :py:mod:`matplotlib.path` (for polygons)
-    - :py:mod:`mpl_toolkits.basemap` (for maps)
     - :py:mod:`netCDF4` (`documentation here <http://unidata.github.io/netcdf4-python/>`_)
     - :py:mod:`spectrum` (`documentation here <http://pythonhosted.org/spectrum/>`_)
 
