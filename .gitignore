@@ -6,3 +6,4 @@ send_to_ftp.sh
 build
 dist
 envtoolkit.egg-info
+docs/source/generated/
