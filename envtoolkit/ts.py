@@ -448,8 +448,7 @@ def remove_mean(xdata):
 
     :param numpy.array xdata: Input data
     
-    :return: A numpy array with the anomalies 
-    of the input array
+    :return: A numpy array with the anomalies of the input array
     
     :rtype: numpy.array
 
@@ -478,11 +477,11 @@ def standardize(xdata, ddof=0):
     :param numpy.array xdata: Input data
     
     :param ddof int: Number of degrees of freedom to remove
-    for the calculation of :math:`\sigma` (see the 
-    :py:func:`numpy.std` documentation.
+        for the calculation of :math:`\sigma` (see the 
+        :py:func:`numpy.std` documentation.
 
     :return: A numpy array with the standardized values
-    of the input array
+        of the input array
     
     :rtype: numpy.array
 
@@ -510,11 +509,11 @@ def xcorr_1d(xdata, ydata, maxlag=None, use_covariance=False, ddof=1):
     :param xdata numpy.array: x-array (leads at positive lags)
     :param ydata numpy.array: y-array (leads at negative lags)
     :param int maxlag: Number of maximum lag to return. If None,
-    maxlag=len(xdata)-1
+        maxlag=len(xdata)-1
     :param bool use_covariance: Whether covariance (True)
-    or correlation (False) should be returned
+        or correlation (False) should be returned
     :param int ddof: Number of degrees of freedom to remove if covariance
-    is computed. If 1, then covariance is divided by (N-1). 
+        is computed. If 1, then covariance is divided by (N-1). 
 
     :return: A tuple with the lags and the cross-correlation array
     :rtype: tuple
@@ -565,10 +564,10 @@ def corr_ND(xdata, ydata, use_covariance=False):
     :param ydata numpy.array: y-array (time must be the first dim.)
     
     :param bool use_covariance: True if covariance should be computed instead of
-    correlation
+        correlation
     
     :return: A tuple with the cross-correlation or cross-covariance array, and the lag array. 
-    Cross-correlation has dimensions (xdata.shape[1:], ydata.shape[1:]).
+        Cross-correlation has dimensions (``xdata.shape[1:]``, ``ydata.shape[1:]``).
 
     :rtype: tuple
     """
@@ -642,12 +641,12 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
     :param ydata numpy.array: y-array (time must be the first dim.)
     
     :param bool use_covariance: True if covariance should be computed instead of
-    correlation
+        correlation
     
     :param int maxglag: number of lag to consider. If None, maxlag=ntime
     
     :return: A tuple with the cross-correlation or cross-covariance array, and the lag array. 
-    Cross-correlation has dimensions (xdata.shape[1:], ydata.shape[1:], 2*maxlag+1).
+        Cross-correlation has dimensions (xdata.shape[1:], ydata.shape[1:], 2*maxlag+1).
 
     :rtype: tuple
 
