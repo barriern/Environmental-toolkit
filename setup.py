@@ -17,7 +17,6 @@ setup(
               'netCDF4',
               'matplotlib',
               're',
-              'mpl_toolkits.basemap',
               'datetime.datetime',
               'spectrum'],
 
