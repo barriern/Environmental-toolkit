@@ -101,7 +101,7 @@ class Lanczos(object):
         output = np.zeros(data.shape)
 
         nwt = len(wgt)
-        nwgt2 = nwt/2
+        nwgt2 = nwt//2
         indw = nwgt2
 
         if data.ndim > 1:
