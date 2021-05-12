@@ -1,6 +1,8 @@
 import os
 from setuptools import setup, find_packages
 
+__docformat__ = "restructuredtext en"
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
