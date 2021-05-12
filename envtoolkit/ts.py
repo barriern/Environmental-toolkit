@@ -85,6 +85,7 @@ class Lanczos(object):
             raise IOError('Unknowm filter %s must be "lp", "hp" or "bp"'
                           % filt_type)
 
+        weights /= np.sum(weights)
         self.wgt = weights
 
     def wgt_runave(self, data):
