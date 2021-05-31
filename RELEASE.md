@@ -4,5 +4,4 @@
 
 ### Bug fixes
 
-- Lanczos weights have are now filtered to improve comparison with NCL results
-
+- Lanczos weights have been improved to better compare with NCL results (cf. `filterxW.c` and `filtrx.f` NCL files) 
