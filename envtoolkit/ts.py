@@ -16,8 +16,8 @@ class Lanczos(object):
     :param str filt_type: The type of filter ("lp"=Low Pass, "hp"=High Pass,
      "bp"=Band Pass
     :param int nwts: Number of weights (must be an odd number)
-    :param float pca: First cut-off period
-    :param float pcb: Second cut-off period (only for band-pass filters)
+    :param float pca: First cut-off period (low-frequency for band-pass, higher period)
+    :param float pcb: Second cut-off period (only for band-pass filters, high-frequency, lower period)
     :param float delta_t: Time-step
     :param float nsigma: A scalar indicating the power of the sigma factor (nsigma >= 0). Note: nsigma=1. is common. 
 
@@ -33,6 +33,12 @@ class Lanczos(object):
         self.pcb = pcb
         self.delta_t = delta_t
         self.nsigma = nsigma
+        
+        if self.pcb is not None:
+            if(1 / self.pcb < 1 / self.pca):
+                # if periods not well defined, swap them
+                print('PCA and PCB have been swapped')
+                self.pca, self.pcb = self.pcb, self.pca
 
         if self.nwts % 2 == 0:
             raise ValueError('Number of weigths must be odd')
@@ -41,15 +47,10 @@ class Lanczos(object):
         # effective weight. So we add to weights so as to get rid off that
         nwts = self.nwts + 2
         weights = np.zeros((nwts))
-        nbwgt2 = nwts // 2
-        nw = (nwts - 1) // 2
-
-        # create temporary array
-        work = np.zeros((nwts))
-        
+        nw = (nwts - 1) // 2  # index of the central value of the filter
+                
         if self.filt_type not in ['hp', 'bp', 'lp']:
-            raise ValueError('Unknowm filter %s must be "lp", "hp" or "bp"'
-                          % filt_type)
+            raise ValueError('Unknowm filter %s must be "lp", "hp" or "bp"' % filt_type)
     
         weights = self._get_lp_weights(self.pca)
         
@@ -63,30 +64,26 @@ class Lanczos(object):
     
             if pcb is None:
                 raise ValueError("pcb is None but filter is band pass")
-                
-            if(1/self.pcb < 1/self.pca):
-                raise ValueError("PCB must be greater than PCA")
-                
+                 
             # copy the weights for the pca frequency
             index = np.arange(0, nw + 1, dtype=int)
             
-            work[index] = weights[index]
+            work = weights[index]
                         
             weights = self._get_lp_weights(self.pcb)
         
-            weights[index] -= work[index]
+            weights[index] -= work
             
-        
         # make weights symetric
         index = np.arange(0, nw, dtype=int)
-        work[index] = weights[index] 
-        nwp1 = nw
+        work = weights[index + 1]  # copy the values of the weights except central value
         
-        weights[index] = work[nw - index]
-        weights[index + nwp1] = work[index]
+        weights[nw] = weights[0]  #  define center value
+
+        weights[index] = work[::-1]
+        weights[nw+1:] = work
         
-        print(np.sum(weights))
-        self.wgt = weights#[1:-1]
+        self.wgt = weights[1:-1]
         
             
     def _get_lp_weights(self, pca):
@@ -104,13 +101,13 @@ class Lanczos(object):
         
         output[0] = 2.0 * fca
         
-        index = np.arange(1, nw + 1)
+        index = np.arange(1, nw + 1, dtype=float)
         sinx = np.sin(arg * index) / (np.pi * index)
         siny = nw * np.sin(index * np.pi / nw)/ (index * np.pi)
         output[index.astype(int)] = sinx * siny**self.nsigma
         
         # normalize weights
-        total = output[0] + 2*np.sum(output[index])
+        total = output[0] + 2*np.sum(output[index.astype(int)])
         output /= total
         
         return output    
@@ -119,31 +116,25 @@ class Lanczos(object):
 
         """ Compute the running mean of a ND input array using the filter weights.
 
-        :param numpy.array data: Array to filter 
-         out (time must be the first dimension)
+        :param numpy.array data: Array to filter out (time must be the first dimension)
 
         """
 
         # we retrive the wgt array and initialise the output
         wgt = self.wgt
         output = np.zeros(data.shape)
-
-        nwt = len(wgt)
-        nwgt2 = nwt//2
-        indw = nwgt2
-
-        if data.ndim > 1:
-            shapein = np.array(data.shape)
-            shapein = shapein[::-1]
-            shapein[-1] = 1
-            wgt = np.tile(wgt, shapein)
-            wgt = np.transpose(wgt)
-
-        while indw+nwgt2+1 <= data.shape[0]:
-            index = np.arange(indw-nwgt2, indw+nwgt2+1, dtype=np.int)
-            output[indw] = np.sum(wgt*data[index], axis=0)
-            indw = indw+1
-
+    
+        nwt = len(wgt)        
+        nwgt2 = (nwt - 1) // 2
+    
+        index = np.arange(nwt, dtype=int)
+        istart = nwgt2
+        iend = data.shape[0] - 1 - nwgt2
+        
+        for i in range(istart, iend + 1):
+            output[i] = np.sum(data[index] * wgt, axis=0)
+            index += 1
+            
         output[output == 0] = np.nan
 
         return output
