@@ -23,7 +23,7 @@ class Lanczos(object):
 
     """
 
-    def __init__(self, filt_type, nwts, pca, pcb=None, delta_t=1, nsigma=1):
+    def __init__(self, filt_type, nwts, pca, pcb=None, delta_t=1.0, nsigma=1):
 
         """ Initialisation of the filter """
 
@@ -47,11 +47,11 @@ class Lanczos(object):
         # create temporary array
         work = np.zeros((nwts))
         
-        if(self.filt_type not in ['hp', 'bp', 'lp']:
+        if self.filt_type not in ['hp', 'bp', 'lp']:
             raise ValueError('Unknowm filter %s must be "lp", "hp" or "bp"'
                           % filt_type)
     
-        weights = self._get_lp_weights(pca)
+        weights = self._get_lp_weights(self.pca)
         
         if self.filt_type == 'hp':
     
@@ -64,48 +64,55 @@ class Lanczos(object):
             if pcb is None:
                 raise ValueError("pcb is None but filter is band pass")
                 
-            if(1/pcb < 1/pca):
+            if(1/self.pcb < 1/self.pca):
                 raise ValueError("PCB must be greater than PCA")
                 
             # copy the weights for the pca frequency
-            work = weights.copy()
-            
-            weights = self._get_lp_weights(pcb)
             index = np.arange(0, nw + 1, dtype=int)
             
+            work[index] = weights[index]
+                        
+            weights = self._get_lp_weights(self.pcb)
+        
             weights[index] -= work[index]
             
         
         # make weights symetric
         index = np.arange(0, nw, dtype=int)
+        work[index] = weights[index] 
+        nwp1 = nw
         
+        weights[index] = work[nw - index]
+        weights[index + nwp1] = work[index]
         
+        print(np.sum(weights))
+        self.wgt = weights#[1:-1]
         
-    
+            
     def _get_lp_weights(self, pca):
 
         ''' Computes the normalized weights for a low pass filter (DFILWTQ fortran routine in NCL) '''
         
         # conversion from period to frequency
-        pca = self.delta_t / pca
+        fca = self.delta_t / pca
         
         nwts = self.nwts + 2
         nw = (nwts - 1) // 2 
-        arg = 2 * np.pi * pca
+        arg = 2 * np.pi * fca
         
         output = np.zeros((nwts))
         
-        output[0] = 2.0 * pca
+        output[0] = 2.0 * fca
         
         index = np.arange(1, nw + 1)
         sinx = np.sin(arg * index) / (np.pi * index)
         siny = nw * np.sin(index * np.pi / nw)/ (index * np.pi)
-        output[index.astype(np.int)] = (sinx * siny)**self.nsigma
+        output[index.astype(int)] = sinx * siny**self.nsigma
         
         # normalize weights
         total = output[0] + 2*np.sum(output[index])
         output /= total
-    
+        
         return output    
     
     def wgt_runave(self, data):
