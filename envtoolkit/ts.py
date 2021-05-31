@@ -19,10 +19,11 @@ class Lanczos(object):
     :param float pca: First cut-off period
     :param float pcb: Second cut-off period (only for band-pass filters)
     :param float delta_t: Time-step
+    :param float nsigma: A scalar indicating the power of the sigma factor (nsigma >= 0). Note: nsigma=1. is common. 
 
     """
 
-    def __init__(self, filt_type, nwts, pca, pcb=None, delta_t=1):
+    def __init__(self, filt_type, nwts, pca, pcb=None, delta_t=1, nsigma=1):
 
         """ Initialisation of the filter """
 
@@ -31,63 +32,82 @@ class Lanczos(object):
         self.pca = pca
         self.pcb = pcb
         self.delta_t = delta_t
+        self.nsigma = nsigma
 
         if self.nwts % 2 == 0:
-            raise IOError('Number of weigths must be odd')
+            raise ValueError('Number of weigths must be odd')
 
         # Because w(n)=w(-n)=0, we would have only nwts-2
         # effective weight. So we add to weights so as to get rid off that
-        nwts = self.nwts+2
-        weights = np.zeros([nwts])
+        nwts = self.nwts + 2
+        weights = np.zeros((nwts))
         nbwgt2 = nwts // 2
+        nw = (nwts - 1) // 2
 
-        if self.filt_type == 'lp':
-
-            cutoff = float(self.pca)
-            cutoff = self.delta_t/cutoff
-
-            weights[nbwgt2] = 2 * cutoff
-            k = np.arange(1., nbwgt2)
-            sigma = np.sin(np.pi * k / nbwgt2) * nbwgt2 / (np.pi * k)
-            firstfactor = np.sin(2. * np.pi * cutoff * k) / (np.pi * k)
-            weights[nbwgt2-1:0:-1] = firstfactor * sigma
-            weights[nbwgt2+1:-1] = firstfactor * sigma
-
-        elif self.filt_type == 'hp':
-
-            cutoff = float(self.pca)
-            cutoff = self.delta_t/cutoff
-
-            weights[nbwgt2] = 1-2 * cutoff
-            k = np.arange(1., nbwgt2)
-            sigma = np.sin(np.pi * k / nbwgt2) * nbwgt2 / (np.pi * k)
-            firstfactor = np.sin(2. * np.pi * cutoff * k) / (np.pi * k)
-            weights[nbwgt2-1:0:-1] = -firstfactor * sigma
-            weights[nbwgt2+1:-1] = -firstfactor * sigma
+        # create temporary array
+        work = np.zeros((nwts))
+        
+        if(self.filt_type not in ['hp', 'bp', 'lp']:
+            raise ValueError('Unknowm filter %s must be "lp", "hp" or "bp"'
+                          % filt_type)
+    
+        weights = self._get_lp_weights(pca)
+        
+        if self.filt_type == 'hp':
+    
+            weights[0] = 1 - weights[0]
+            index = np.arange(1, nw + 1, dtype=int)
+            weights[index] = -weights[index]
 
         elif self.filt_type == 'bp':
+    
+            if pcb is None:
+                raise ValueError("pcb is None but filter is band pass")
+                
+            if(1/pcb < 1/pca):
+                raise ValueError("PCB must be greater than PCA")
+                
+            # copy the weights for the pca frequency
+            work = weights.copy()
+            
+            weights = self._get_lp_weights(pcb)
+            index = np.arange(0, nw + 1, dtype=int)
+            
+            weights[index] -= work[index]
+            
+        
+        # make weights symetric
+        index = np.arange(0, nw, dtype=int)
+        
+        
+        
+    
+    def _get_lp_weights(self, pca):
 
-            cutoff1 = np.max([float(self.pca), float(self.pcb)])
-            cutoff1 = self.delta_t/cutoff1
-
-            cutoff2 = np.min([float(self.pca), float(self.pcb)])
-            cutoff2 = self.delta_t/cutoff2
-
-            weights[nbwgt2] = 2*cutoff2-2*cutoff1
-            k = np.arange(1., nbwgt2)
-            sigma = np.sin(np.pi * k / nbwgt2) * nbwgt2 / (np.pi * k)
-            firstfactor = (np.sin(2.*np.pi*cutoff1*k)/(np.pi*k)) \
-                - (np.sin(2.*np.pi*cutoff2*k)/(np.pi*k))
-            weights[nbwgt2-1:0:-1] = -firstfactor * sigma
-            weights[nbwgt2+1:-1] = -firstfactor * sigma
-
-        else:
-            raise IOError('Unknowm filter %s must be "lp", "hp" or "bp"'
-                          % filt_type)
-
-        weights /= np.sum(weights)
-        self.wgt = weights
-
+        ''' Computes the normalized weights for a low pass filter (DFILWTQ fortran routine in NCL) '''
+        
+        # conversion from period to frequency
+        pca = self.delta_t / pca
+        
+        nwts = self.nwts + 2
+        nw = (nwts - 1) // 2 
+        arg = 2 * np.pi * pca
+        
+        output = np.zeros((nwts))
+        
+        output[0] = 2.0 * pca
+        
+        index = np.arange(1, nw + 1)
+        sinx = np.sin(arg * index) / (np.pi * index)
+        siny = nw * np.sin(index * np.pi / nw)/ (index * np.pi)
+        output[index.astype(np.int)] = (sinx * siny)**self.nsigma
+        
+        # normalize weights
+        total = output[0] + 2*np.sum(output[index])
+        output /= total
+    
+        return output    
+    
     def wgt_runave(self, data):
 
         """ Compute the running mean of a ND input array using the filter weights.
