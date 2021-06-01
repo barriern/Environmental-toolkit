@@ -1,7 +1,7 @@
 
 """ Functions/classes relative to time-series """
 
-import datetime 
+import datetime
 import numpy as np
 import pylab as plt
 import scipy.stats as stats
@@ -10,7 +10,7 @@ import scipy.stats as stats
 class Lanczos(object):
 
     """
-    Class for Lanczos filtering. Inspired from 
+    Class for Lanczos filtering. Inspired from
     NCL's `filwgts_lanczos <http://www.ncl.ucar.edu/Document/Functions/Built-in/filwgts_lanczos.shtml>`_ and `wgt_runave <http://www.ncl.ucar.edu/Document/Functions/Built-in/wgt_runave.shtml>`_ functions.
 
     :param str filt_type: The type of filter ("lp"=Low Pass, "hp"=High Pass,
@@ -19,7 +19,7 @@ class Lanczos(object):
     :param float pca: First cut-off period (low-frequency for band-pass, higher period)
     :param float pcb: Second cut-off period (only for band-pass filters, high-frequency, lower period)
     :param float delta_t: Time-step
-    :param float nsigma: A scalar indicating the power of the sigma factor (nsigma >= 0). Note: nsigma=1. is common. 
+    :param float nsigma: A scalar indicating the power of the sigma factor (nsigma >= 0). Note: nsigma=1. is common.
 
     """
 
@@ -33,7 +33,7 @@ class Lanczos(object):
         self.pcb = pcb
         self.delta_t = delta_t
         self.nsigma = nsigma
-        
+
         if self.pcb is not None:
             if(1 / self.pcb < 1 / self.pca):
                 # if periods not well defined, swap them
@@ -48,70 +48,70 @@ class Lanczos(object):
         nwts = self.nwts + 2
         weights = np.zeros((nwts))
         nw = (nwts - 1) // 2  # index of the central value of the filter
-                
+
         if self.filt_type not in ['hp', 'bp', 'lp']:
             raise ValueError('Unknowm filter %s must be "lp", "hp" or "bp"' % filt_type)
-    
+
         weights = self._get_lp_weights(self.pca)
-        
+
         if self.filt_type == 'hp':
-    
+
             weights[0] = 1 - weights[0]
             index = np.arange(1, nw + 1, dtype=int)
             weights[index] = -weights[index]
 
         elif self.filt_type == 'bp':
-    
+
             if pcb is None:
                 raise ValueError("pcb is None but filter is band pass")
-                 
+
             # copy the weights for the pca frequency
             index = np.arange(0, nw + 1, dtype=int)
-            
+
             work = weights[index]
-                        
+
             weights = self._get_lp_weights(self.pcb)
-        
+
             weights[index] -= work
-            
+
         # make weights symetric
         index = np.arange(0, nw, dtype=int)
         work = weights[index + 1]  # copy the values of the weights except central value
-        
+
         weights[nw] = weights[0]  #  define center value
 
         weights[index] = work[::-1]
         weights[nw+1:] = work
-        
+
         self.wgt = weights[1:-1]
-        
-            
+
+
     def _get_lp_weights(self, pca):
 
         ''' Computes the normalized weights for a low pass filter (DFILWTQ fortran routine in NCL) '''
-        
+
         # conversion from period to frequency
         fca = self.delta_t / pca
-        
+
         nwts = self.nwts + 2
-        nw = (nwts - 1) // 2 
+        nw = (nwts - 1) // 2
         arg = 2 * np.pi * fca
-        
+
         output = np.zeros((nwts))
-        
+
         output[0] = 2.0 * fca
-        
+
         index = np.arange(1, nw + 1, dtype=float)
         sinx = np.sin(arg * index) / (np.pi * index)
         siny = nw * np.sin(index * np.pi / nw)/ (index * np.pi)
         output[index.astype(int)] = sinx * siny**self.nsigma
-        
+
         # normalize weights
         total = output[0] + 2*np.sum(output[index.astype(int)])
         output /= total
-        
-        return output    
-    
+
+        return output
+
     def wgt_runave(self, data):
 
         """ Compute the running mean of a ND input array using the filter weights.
@@ -123,18 +123,18 @@ class Lanczos(object):
         # we retrive the wgt array and initialise the output
         wgt = self.wgt
         output = np.zeros(data.shape)
-    
-        nwt = len(wgt)        
+
+        nwt = len(wgt)
         nwgt2 = (nwt - 1) // 2
-    
+
         index = np.arange(nwt, dtype=int)
         istart = nwgt2
         iend = data.shape[0] - 1 - nwgt2
-        
+
         for i in range(istart, iend + 1):
-            output[i] = np.sum(data[index] * wgt, axis=0)
+            output[i] = np.sum(data[index].T * wgt, axis=-1).T
             index += 1
-            
+
         output[output == 0] = np.nan
 
         return output
@@ -142,21 +142,21 @@ class Lanczos(object):
 
 def compute_monthly_clim(data, yyyymm):
 
-    """ 
-    Compute a monthly seasonal cycle from a monthly dataset. 
+    """
+    Compute a monthly seasonal cycle from a monthly dataset.
 
-    This script is largely inspired from the 
+    This script is largely inspired from the
     `NCL clmMonTLL <https://www.ncl.ucar.edu/Document/Functions/Contributed/clmMonTLL.shtml>`_ function
 
-    :param numpy.ndarray data: dataset whose seasonal 
+    :param numpy.ndarray data: dataset whose seasonal
      cycle to extract (time must be the first dimension)
 
-    :param int date: the date vector (format YYYYMM, 
-     with YYYY=year, MM=month). For instance obtained with the 
+    :param int date: the date vector (format YYYYMM,
+     with YYYY=year, MM=month). For instance obtained with the
      :py:func:`envtoolkit.ts.make_yymm` function.
 
-    :return: a numpy array that contains the monthly seasonal cycle. 
-     Same dimensions as `data`, except for 
+    :return: a numpy array that contains the monthly seasonal cycle.
+     Same dimensions as `data`, except for
      the first dimension which is 12
 
     :rtype: numpy.array
@@ -183,21 +183,21 @@ def compute_monthly_clim(data, yyyymm):
 
 def compute_monthly_anom(data, yyyymm, clim):
 
-    """ 
+    """
     Computes anomalies relative to a monthly climatology.
     This script is largely inspired from NCL's
     `calcMonAnomTLL <https://www.ncl.ucar.edu/Document/Functions/Contributed/calcMonAnomTLL.shtml>`_ function
 
-    :param numpy.array data: data from which to 
+    :param numpy.array data: data from which to
      extract monthly anom (data must be first dimension).
 
-    :param int date: the date vector (format YYYYMM, 
+    :param int date: the date vector (format YYYYMM,
      with YYYY=year, MM=month)
 
-    :param numpy.array dataclim: the montly climatology, computed with the 
+    :param numpy.array dataclim: the montly climatology, computed with the
      :func:`envtoolkit.ts.compute_clim` function.
 
-    :return: a numpy array that contains the monthly anomalies. 
+    :return: a numpy array that contains the monthly anomalies.
      Same dimensions as `data`
 
     :rtype: numpy.array
@@ -225,15 +225,15 @@ def compute_monthly_anom(data, yyyymm, clim):
 
 def day_of_year(yymmdd):
 
-    """ 
-    Returns the day of year of 
+    """
+    Returns the day of year of
 
     a date vector in format YYYYMMDD
 
-    :param int date: Input date (format YYYYMMDD, 
+    :param int date: Input date (format YYYYMMDD,
      with YYYY=year, MM=month, DD=day)
 
-    :return: a numpy.array containing the day 
+    :return: a numpy.array containing the day
      of year (1st of January=1, etc)
 
     :rtype: int
@@ -258,30 +258,30 @@ def day_of_year(yymmdd):
 
 def compute_daily_clim(data, date, smooth=True, nharm=2):
 
-    """ 
-    Computes a daily seasonal cycle from a daily dataset. 
-    The user has the possibility to smooth the seasonal cycle, 
+    """
+    Computes a daily seasonal cycle from a daily dataset.
+    The user has the possibility to smooth the seasonal cycle,
     for instance by keeping the first two harmonics (annual and
-    semi annual cycles). 
+    semi annual cycles).
     This script is largely inspired from NCL's
     `calcDayAnomTLL <https://www.ncl.ucar.edu/Document/Functions/Contributed/calcMonAnomTLL.shtml>`_ and
     `smthClmDayTLL <https://www.ncl.ucar.edu/Document/Functions/Contributed/smthClmDayTLL.shtml>`_ functions
-    
-    :param numpy.ndarray data: dataset whose seasonal 
+
+    :param numpy.ndarray data: dataset whose seasonal
      cycle to extract (time must be the first dimension)
 
-    :param int date: the date vector (format YYYYMMDD, 
+    :param int date: the date vector (format YYYYMMDD,
      with YYYY=year, MM=month, DD=day). Obtained by using
      the :py:func:`envtoolkit.ts.make_yymmdd` function.
 
-    :param bool smooth: defines whether the seasonal cycle should 
+    :param bool smooth: defines whether the seasonal cycle should
      be smoothed by using Fast Fourier Transform
 
-    :param int nharm: number of harmonics to retain if `smooth` is True. Use 
+    :param int nharm: number of harmonics to retain if `smooth` is True. Use
      2 to keep annual and semi-annual harmonics
 
-    :return: a numpy array that contains the daily seasonal cycle. 
-     Same dimensions as `data`, except for 
+    :return: a numpy array that contains the daily seasonal cycle.
+     Same dimensions as `data`, except for
      the first dimension which is 366.
 
     :rtype: numpy.array
@@ -305,25 +305,25 @@ def compute_daily_clim(data, date, smooth=True, nharm=2):
 
 def smooth_data_fft(data, nharm):
 
-    """ 
-    Smooth an input data array by using a FFT filter. 
-    
-    Inspired from NCL's 
+    """
+    Smooth an input data array by using a FFT filter.
+
+    Inspired from NCL's
     `smthClmDayTLL<https://www.ncl.ucar.edu/Document/Functions/Contributed/smthClmDayTLL.shtml>` _ function
 
-    The FFT coefficients are extracted, and the 
-    signal is reconstructed by using only the 
-    first `nharm` harmonics. Is used in the 
-    :py:mod:`envtoolkit.ts.compute_daily_clim` function to 
+    The FFT coefficients are extracted, and the
+    signal is reconstructed by using only the
+    first `nharm` harmonics. Is used in the
+    :py:mod:`envtoolkit.ts.compute_daily_clim` function to
     smooth a daily seasonal cycle.
 
-    :param numpy.ndarray data: dataset whose seasonal 
+    :param numpy.ndarray data: dataset whose seasonal
      cycle to extract (time must be the first dimension)
-        
+
     :param int nharm: number of harmonics to retain
-    
+
     """
-    
+
     fft = np.fft.rfft(data, axis=0)
     fft[nharm] = 0.5*fft[nharm]
     fft[nharm+1:] = 0
@@ -338,16 +338,16 @@ def compute_daily_anom(data, date, clim):
     NCL's
     `calcDayAnomTLL <https://www.ncl.ucar.edu/Document/Functions/Contributed/calcMonAnomTLL.shtml>`_ function
 
-    :param numpy.array data: data from which to extract daily 
+    :param numpy.array data: data from which to extract daily
      anom (time must be the first dimension)
 
-    :param int date: the date vector (format YYYYMMDD, 
-     with YYYY=year, MM=month, DD=day). 
+    :param int date: the date vector (format YYYYMMDD,
+     with YYYY=year, MM=month, DD=day).
 
-    :param numpy.array clim: the daily climatology, computed with the 
+    :param numpy.array clim: the daily climatology, computed with the
      :py:func:`envtoolkit.ts.compute_clim` function
 
-    :return: a numpy array that contains the daily anomalies. 
+    :return: a numpy array that contains the daily anomalies.
      Same dimensions as `data`
 
     :rtype: numpy.array
@@ -379,7 +379,7 @@ def make_yymmdd(date):
 
     """
     Converts a list/array of dates into YYYYMMDD integers.
-    
+
     | YYYY=year
     | MM=month
     | DD=day
@@ -445,10 +445,10 @@ def make_monthly_means(data, yymmdd):
 
 def doy_to_date(year, doy):
 
-    """ 
+    """
     Converts from day of year into date
 
-    :param int year: Year 
+    :param int year: Year
     :param int doy: Day of year
     """
 
@@ -456,19 +456,19 @@ def doy_to_date(year, doy):
 
 def remove_mean(xdata):
 
-    r""" 
+    r"""
     Remove the mean from the dataset.
-    
+
     .. math::
-        
+
         output = \frac{x-\overline{x}}
 
     Made on the first dimension (usually time).
 
     :param numpy.array xdata: Input data
-    
+
     :return: A numpy array with the anomalies of the input array
-    
+
     :rtype: numpy.array
 
     """
@@ -478,30 +478,30 @@ def remove_mean(xdata):
 
     # calculation of mean/std along first dimension (time)
     xmean = np.mean(xdata, axis=0)
-    
+
     return xdata - xmean
 
 
 def standardize(xdata, ddof=0):
 
-    r""" 
+    r"""
     Standardizes the xdata array
-    
+
     .. math::
-        
+
         output = \frac{x-\overline{x}}{\sigma_x}
 
     Made on the first dimension (usually time).
 
     :param numpy.array xdata: Input data
-    
+
     :param ddof int: Number of degrees of freedom to remove
-        for the calculation of :math:`\sigma` (see the 
+        for the calculation of :math:`\sigma` (see the
         :py:func:`numpy.std` documentation.
 
     :return: A numpy array with the standardized values
         of the input array
-    
+
     :rtype: numpy.array
 
     """
@@ -511,7 +511,7 @@ def standardize(xdata, ddof=0):
 
     # calculation of mean/std along first dimension (time)
     xstd = np.std(xdata, axis=0, ddof=ddof)
-    
+
     output = remove_mean(xdata) / (xstd)
 
     return output
@@ -521,8 +521,8 @@ def xcorr_1d(xdata, ydata, maxlag=None, use_covariance=False, ddof=1):
 
     '''
     Computes the cross-correlation/cross-covariance
-    two one-dimensional arrays. 
-    xdata leads at positive lags. Inspired from the 
+    two one-dimensional arrays.
+    xdata leads at positive lags. Inspired from the
     :py:func:`pyplot.xcorr` function
 
     :param xdata numpy.array: x-array (leads at positive lags)
@@ -532,7 +532,7 @@ def xcorr_1d(xdata, ydata, maxlag=None, use_covariance=False, ddof=1):
     :param bool use_covariance: Whether covariance (True)
         or correlation (False) should be returned
     :param int ddof: Number of degrees of freedom to remove if covariance
-        is computed. If 1, then covariance is divided by (N-1). 
+        is computed. If 1, then covariance is divided by (N-1).
 
     :return: A tuple with the lags and the cross-correlation array
     :rtype: tuple
@@ -575,17 +575,17 @@ def corr_ND(xdata, ydata, use_covariance=False):
 
     """
     Computes the correlation/covariance between the xdata and ydata
-    arrays at 0-lag. Calculation is performed on first dimension 
+    arrays at 0-lag. Calculation is performed on first dimension
     (usually time). Loop is optimized by using special loops.
-    
+
     :param xdata numpy.array: x-array (time must be the first dim.)
 
     :param ydata numpy.array: y-array (time must be the first dim.)
-    
+
     :param bool use_covariance: True if covariance should be computed instead of
         correlation
-    
-    :return: A tuple with the cross-correlation or cross-covariance array, and the lag array. 
+
+    :return: A tuple with the cross-correlation or cross-covariance array, and the lag array.
         Cross-correlation has dimensions (``xdata.shape[1:]``, ``ydata.shape[1:]``).
 
     :rtype: tuple
@@ -619,7 +619,7 @@ def corr_ND(xdata, ydata, use_covariance=False):
     if ydata.ndim == 1:
         ydata = np.atleast_2d(ydata).T
 
-    # extracting the shape of the output from 
+    # extracting the shape of the output from
     # maxlag and the shapes of the input arrays
     outshape = list(xdata.shape[1:]) + list(ydata.shape[1:])
 
@@ -649,32 +649,32 @@ def corr_ND(xdata, ydata, use_covariance=False):
 
 
 def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
-    
+
     """
     Computes the cross-correlation/cross-covariance between the xdata and ydata
-    arrays. Calculation is performed on first dimension 
+    arrays. Calculation is performed on first dimension
     (usually time). xdata leads for positive lags.
 
     :param xdata numpy.array: x-array (time must be the first dim.)
 
     :param ydata numpy.array: y-array (time must be the first dim.)
-    
+
     :param bool use_covariance: True if covariance should be computed instead of
         correlation
-    
+
     :param int maxglag: number of lag to consider. If None, maxlag=ntime
-    
-    :return: A tuple with the cross-correlation or cross-covariance array, and the lag array. 
+
+    :return: A tuple with the cross-correlation or cross-covariance array, and the lag array.
         Cross-correlation has dimensions (xdata.shape[1:], ydata.shape[1:], 2*maxlag+1).
 
     :rtype: tuple
 
     """
-    
+
     if xdata.shape[0] != ydata.shape[0]:
         message = 'The first dimension of xdata array(%d) is different from the first dimension of the ydata array (%d). This program will be stopped.'
         raise ValueError(message)
-    
+
     ntime = xdata.shape[0]
 
     if maxlag is None:
@@ -683,14 +683,14 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
         maxlag = ntime - 1
     if maxlag < 1:
         maxlag = 1
-    
+
     # the correlation function used is the 1D xcorr function
     corrfunc = xcorr_1d
     # setting options of the xcorr function
     if use_covariance:
-        dict_xcorr = {"use_covariance": True, "maxlag": maxlag} 
+        dict_xcorr = {"use_covariance": True, "maxlag": maxlag}
     else:
-        dict_xcorr = {"use_covariance": False, "maxlag": maxlag} 
+        dict_xcorr = {"use_covariance": False, "maxlag": maxlag}
 
     # If xdata or ydata is 1d (nt), we convert it into
     # array of dimension (nt, 1)
@@ -703,12 +703,12 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
     # the imput arrays
     ndimx = np.prod(xdata.shape[1:])
     ndimy = np.prod(ydata.shape[1:])
-    
-    # extracting the shape of the output from 
+
+    # extracting the shape of the output from
     # maxlag and the shapes of the input arrays
     tempshape = list(xdata.shape[1:]) + list(ydata.shape[1:])
     outshape = tempshape + [2*maxlag+1]
-    
+
     # conversion of the array into a 2D array
     # if their dims is greater than 2
     if xdata.ndim > 2:
@@ -722,21 +722,21 @@ def xcorr_ND(xdata, ydata, maxlag=None, use_covariance=False):
 
     # initialises the lag vector
     lag_array = np.arange(maxlag+1)
-    
+
     # calculation of the cross-correlation for each spatial point
     output = [corrfunc(xtemp, ytemp, **dict_xcorr) for xtemp in xdata for ytemp in ydata]
-    
+
     # extraction of the lag array
     lag = output[0][0]
 
-    # extraction of the cross-correlation data 
+    # extraction of the cross-correlation data
     output = [var[1] for var in output]
 
     # conversion into a numpy array and reshaping
     output = np.array(output)
-    
+
     output = np.reshape(output, outshape)
-    
+
     return lag, output
 
 def autolag1(TS1):
