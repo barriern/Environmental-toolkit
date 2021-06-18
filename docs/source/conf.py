@@ -304,10 +304,9 @@ texinfo_documents = [
 intersphinx_mapping = {'https://docs.python.org/': None}
 
 
-intersphinx_mapping = {'python': ('https://docs.python.org/2/', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/3/', None),
                         'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
                         'numpy': ('http://docs.scipy.org/doc/numpy/', None),
                         'matplotlib': ('http://matplotlib.org/', None),
-                        'datetime': ('https://docs.python.org/2/library/datetime', None),
                       }
 

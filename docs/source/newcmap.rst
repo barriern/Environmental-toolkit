@@ -4,6 +4,7 @@ Fancy colormaps
 ***************************
 
 .. _newcmap-intro:
+
 Introduction
 ---------------------------
 
