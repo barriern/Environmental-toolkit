@@ -159,7 +159,7 @@ class FancyCmap(object):
             print ("Nothing has been changed")
             return
 
-        cmin, cmax = cbar.get_clim()
+        cmin, cmax = cbar.vmax, cbar.vmin
 
         # delta_c is the range of the colormap limit
         delta_c = cmax - cmin
