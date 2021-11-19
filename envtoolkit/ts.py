@@ -166,8 +166,8 @@ def compute_monthly_clim(data, yyyymm):
     data = np.ma.array(data, mask=data != data)
 
     yyyymm = yyyymm.astype(np.int)
-    year = yyyymm/100
-    month = yyyymm-100*year
+    year = yyyymm // 100
+    month = yyyymm - 100*year
 
     monthvec = np.unique(month)
 
@@ -208,17 +208,15 @@ def compute_monthly_anom(data, yyyymm, clim):
 
     anoms = np.ma.zeros(data.shape)
     yyyymm = yyyymm.astype(np.int)
-    year = yyyymm/100
+    year = yyyymm // 100
     month = yyyymm - 100*year
 
     monthvec = np.unique(month)
-    reshape_array = np.ones(data.ndim)
 
     for indmonth in range(0, len(monthvec)):
 
         ind_ok = np.nonzero(month == monthvec[indmonth])[0]
-        reshape_array[0] = len(ind_ok)
-        anoms[ind_ok] = data[ind_ok] - np.tile(clim[indmonth], reshape_array)
+        anoms[ind_ok, ...] = data[ind_ok, ...] - clim[slice(indmonth, indmonth + 1), ...]
 
     return anoms
 
@@ -242,8 +240,8 @@ def day_of_year(yymmdd):
 
     yymmdd = np.array(yymmdd)
 
-    year = yymmdd/10000
-    month = (yymmdd - 10000*year)/100
+    year = yymmdd // 10000
+    month = (yymmdd - 10000*year) // 100
     day = (yymmdd - 10000*year - 100*month)
 
     # Computation of the 'day_of_year' vector
@@ -363,14 +361,10 @@ def compute_daily_anom(data, date, clim):
     dayofyear = day_of_year(date)
     anoms = np.ma.zeros(data.shape)
 
-    reshape_array = np.ones(data.ndim)
-
     for indday in range(0, 366):
 
         ind_ok = np.nonzero(dayofyear == indday+1)[0]
-
-        reshape_array[0] = len(ind_ok)
-        anoms[ind_ok] = data[ind_ok] - np.tile(clim[indday], reshape_array)
+        anoms[ind_ok, ...] = data[ind_ok, ...] - clim[slice(indday, indday + 1), ...]
 
     return anoms
 
@@ -433,7 +427,7 @@ def make_monthly_means(data, yymmdd):
 
     yymmdd = np.array(yymmdd)
     dataout = []
-    yyyymm = yymmdd/100
+    yyyymm = yymmdd // 100
 
     for yyyint in np.unique(yyyymm):
         iok = np.nonzero(yyyymm == yyyint)[0]
