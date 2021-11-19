@@ -6,9 +6,13 @@ __docformat__ = "restructuredtext en"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+VERSION_FILE = 'VERSION'
+with open(VERSION_FILE) as fv:
+    version = fv.read().strip()
+
 setup(
     name="envtoolkit",
-    version="1.0.1",
+    version=version,
     author="Nicolas Barrier",
     author_email="nicolas.barrier@ird.fr",
     description=("Python package dedicated to the Earth Scientists."),
