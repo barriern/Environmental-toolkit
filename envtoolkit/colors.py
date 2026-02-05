@@ -362,7 +362,7 @@ class FancyCmap(object):
         output = np.array(output)  # we convert the list into an array
 
         # we recover the offset percentage
-        self.offset = output[:, 0].astype(np.float)/100.
+        self.offset = output[:, 0].astype(float)/100.
 
         # we recover the col and convert them into percentage
         self.col = output[:, 1:].astype(np.int)/255.
