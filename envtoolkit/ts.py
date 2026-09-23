@@ -165,7 +165,7 @@ def compute_monthly_clim(data, yyyymm):
 
     data = np.ma.array(data, mask=data != data)
 
-    yyyymm = yyyymm.astype(np.int)
+    yyyymm = yyyymm.astype(int)
     year = yyyymm // 100
     month = yyyymm - 100*year
 
@@ -207,7 +207,7 @@ def compute_monthly_anom(data, yyyymm, clim):
     data = np.ma.array(data, mask=data != data)
 
     anoms = np.ma.zeros(data.shape)
-    yyyymm = yyyymm.astype(np.int)
+    yyyymm = yyyymm.astype(int)
     year = yyyymm // 100
     month = yyyymm - 100*year
 
@@ -249,7 +249,7 @@ def day_of_year(yymmdd):
     for indtime in range(0, len(year)):
         dateint = datetime.datetime(year[indtime], month[indtime], day[indtime])
         dayofyear[indtime] = dateint.strftime('%j')
-    dayofyear = dayofyear.astype(np.int)
+    dayofyear = dayofyear.astype(int)
 
     return dayofyear
 

@@ -7,8 +7,20 @@ import numpy as np
 import pylab as plt
 import matplotlib as mpl
 
+def lonflip(lon):
+    if(lon.min() < 0):
+        print('Conversion from -180/180 to 0/360')
+        # equivalent to lon[lon < 0] += 360
+        lon = (lon + 360) % 360
+    else:
+        print('Conversion from 0/360 to -180/180')
+        # equivalent to lon[lon > 180] -= 360
+        lon =  (lon + 180) % 360 - 180
+    
+    return(lon)
 
-def lonflip(lonname, data):
+
+def lonflip2(lonname, data):
 
     """
     Reorders a longitude and a data array about the central longitude 

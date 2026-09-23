@@ -10,3 +10,5 @@ except:
     VERSION_FILE = os.path.join('{0}/../'.format(os.path.dirname(__file__)), 'VERSION')
     with open(VERSION_FILE, 'r') as infile:
         __version__ = infile.read().strip()
+
+from .map import lonflip

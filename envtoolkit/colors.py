@@ -11,13 +11,13 @@ def make_percentile_cmap(array, perc):
 
     """
     Returns colormaps limits using percentiles. The
-    minimum color value. 
+    minimum color value.
 
     :param numpy.array array: Input array
 
     :param int perc : Percentile (in percentage)
 
-    :return: A tuple containing the lower 
+    :return: A tuple containing the lower
      and upper colorbar limits
      associated with the array percentiles.
 
@@ -53,23 +53,23 @@ class FancyCmap(object):
     """
     Class for generating fancy colormaps.
 
-    It creates the attributes `offset` 
-    (containing the linear mapping segments) and 
-    `col` (containing the associated colors). 
+    It creates the attributes `offset`
+    (containing the linear mapping segments) and
+    `col` (containing the associated colors).
 
-    :param str|int|numpy.array input_cmap: Colormap to use. Can be 
-     a string (the name of the .svg file to read), a list 
+    :param str|int|numpy.array input_cmap: Colormap to use. Can be
+     a string (the name of the .svg file to read), a list
      of named colors or a 3xN/Nx3 numpy.array (percentage of RGB values)
 
-    :param bool smooth: If the `input_cmap` argument is a list 
-     or an array, define whether the colormap 
+    :param bool smooth: If the `input_cmap` argument is a list
+     or an array, define whether the colormap
      is smoothed (i.e gradient type colormap) or not.
 
     :param bool reverse: Defines whether the colors should be
      reversed.
 
-    :param list list_offset: List of values containing 
-     mapping segments. Only used for user defined colormaps. 
+    :param list list_offset: List of values containing
+     mapping segments. Only used for user defined colormaps.
      If None, regular offseting is used.
 
     """
@@ -116,16 +116,16 @@ class FancyCmap(object):
     def makecmap(self, nbcol=256):
 
         """
-        Create the colormap instance. 
-        
+        Create the colormap instance.
+
         The output of this function will be provided in `cmap` argument
         of the :py:func:`matplotlib.pyplot.contourf` or similar functions.
 
-        :param int nbcol: Number of colors 
-         in the colormap 
+        :param int nbcol: Number of colors
+         in the colormap
 
-        :param bool reverse: defines whether the colormap should be 
-         reversed or not (equivalent to the _r for instance) 
+        :param bool reverse: defines whether the colormap should be
+         reversed or not (equivalent to the _r for instance)
 
         :return: A colormap object
 
@@ -144,7 +144,7 @@ class FancyCmap(object):
     def generate_cbticks(self, cbar):
 
         """
-        Writes colorbar ticks for discrete colormaps. 
+        Writes colorbar ticks for discrete colormaps.
 
         It writes a label at each edges of the colorbar.
 
@@ -183,9 +183,9 @@ class FancyCmap(object):
         """
         Creates the dictionnary that will be
         used to create the colormap.
-        This is a dictionnary similar to those 
-        in the _cm.py file. It contains three entries, 'red', 
-        'green' and 'blue'. They are list of tuples, each 
+        This is a dictionnary similar to those
+        in the _cm.py file. It contains three entries, 'red',
+        'green' and 'blue'. They are list of tuples, each
         element containing the offset
         and the percentage of the color
         """
@@ -250,10 +250,10 @@ class FancyCmap(object):
     def _makecoloffset(self, col):
 
         """
-        Defines the offset and color 
+        Defines the offset and color
         attributes.
-        
-        Used only for user-defined colormaps. 
+
+        Used only for user-defined colormaps.
 
         :param list col: List of colors
 
@@ -346,7 +346,7 @@ class FancyCmap(object):
         filein.close()
 
         # regular expression which is read
-        pattern = r' *<stop offset="([0-9]{1,3}\.[0-9]{2})%" ' + \
+        pattern = r' *<stop offset="([0-9]{1,6}\.[0-9]{1,6})%" ' + \
                   r'*stop-color="rgb\(([0-9]{1,3}), ?([0-9]{1,3}), ?([0-9]{1,3})\)"'
 
         valid = re.compile(pattern)
@@ -355,7 +355,7 @@ class FancyCmap(object):
 
             # if the line l matches the pattern, we recover the variables
             if valid.match(line):
-
+                print(line)
                 # we append the variable in the output list
                 output.append(list(valid.match(line).groups()))
 
@@ -365,7 +365,7 @@ class FancyCmap(object):
         self.offset = output[:, 0].astype(float)/100.
 
         # we recover the col and convert them into percentage
-        self.col = output[:, 1:].astype(np.int)/255.
+        self.col = output[:, 1:].astype(int)/255.
 
     def _initfromarray(self):
 
@@ -407,11 +407,11 @@ def make_boundary_norm(ncolors, boundaries):
 
         boundary[i] <= value < boundary[i+1]
 
-    then the data is mapped to color(i) 
+    then the data is mapped to color(i)
     (cf :py:class:`matplotlib.colors.BoundaryNorm` documentation).
 
     :param int ncolors: Number of colors to display on the colormap
-    :param numpy.array boundaries: Array containing the colorbar boundaries (i.e 
+    :param numpy.array boundaries: Array containing the colorbar boundaries (i.e
      the values of the colorbar edges). *Must have (ncolors+1) elements*.
 
     .. warning:: When using the output norm in a pcolormesh/imshow function, the
@@ -467,7 +467,7 @@ def subspan_default_cmap(cmapname, nbcol):
 
     # Matplotlib function that creates the colormap from
     # the mapping directory
-    #if(isinstance(dictout, dict)): 
+    #if(isinstance(dictout, dict)):
     #cmap = LinearSegmentedColormap('', dictout, N=nbcol)
     #else:
     #base = cm.get_cmap(cmapname)
@@ -476,7 +476,7 @@ def subspan_default_cmap(cmapname, nbcol):
     #print(newcolors)
     #cmap = ListedColormap(newcolors, N=nbcol)
     #return cmap
-        
+
     # https://gist.github.com/jakevdp/91077b0cae40f8f8244a
     base = cm.get_cmap(cmapname)
     outlist = np.linspace(0, 1, nbcol)
