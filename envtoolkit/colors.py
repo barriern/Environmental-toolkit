@@ -355,7 +355,6 @@ class FancyCmap(object):
 
             # if the line l matches the pattern, we recover the variables
             if valid.match(line):
-                print(line)
                 # we append the variable in the output list
                 output.append(list(valid.match(line).groups()))
 
